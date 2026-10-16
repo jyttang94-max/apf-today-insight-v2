@@ -1,0 +1,391 @@
+name: APF V5 Daily Collection
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 매일 한국시간 07:50
+    - cron: '50 22 * * *'
+    # 매일 한국시간 16:00
+    - cron: '0 7 * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apf-v4-storage-pilot
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout default branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Collect candidates
+        run: |
+          python - <<'PY'
+          import datetime as dt
+          import runpy
+
+          module = runpy.run_path(
+              "scripts/collect_v4_storage_pilot.py"
+          )
+          main = module["main"]
+          scope = main.__globals__
+
+          # 평일뿐 아니라 매일 운영합니다.
+          # 오후 수집은 다음 달력 날짜를 대상으로 합니다.
+          scope["next_business_day"] = (
+              lambda day: day + dt.timedelta(days=1)
+          )
+
+          main()
+          PY
+
+      - name: Merge evening and morning candidates
+        run: |
+          python - <<'PY'
+          import datetime as dt
+          import hashlib
+          import html
+          import json
+          import os
+          import re
+          from pathlib import Path
+          from urllib.parse import (
+              parse_qsl, urlencode, urlsplit, urlunsplit
+          )
+          from zoneinfo import ZoneInfo
+
+          kst = ZoneInfo("Asia/Seoul")
+          now = dt.datetime.now(kst)
+          run_id = os.environ["GITHUB_RUN_ID"]
+          attempt = os.environ["GITHUB_RUN_ATTEMPT"]
+
+          raw_root = Path("data/v4/runs")
+          current = list(
+              raw_root.glob(f"*-{run_id}-{attempt}")
+          )
+
+          if len(current) != 1:
+              raise RuntimeError(
+                  "Current collection folder not found"
+              )
+
+          current_payload = json.loads(
+              (current[0] / "latest.json").read_text(
+                  encoding="utf-8"
+              )
+          )
+
+          edition = current_payload["edition_date"]
+          edition_day = dt.date.fromisoformat(edition)
+          cutoff = now - dt.timedelta(days=7)
+
+          output = (
+              Path("data/v5/runs") / current[0].name
+          )
+          output.mkdir(parents=True, exist_ok=False)
+
+          def title_key(title):
+              return re.sub(
+                  r"[^0-9a-z가-힣]",
+                  "",
+                  title.lower(),
+              )
+
+          def url_key(url):
+              if not url:
+                  return ""
+              parts = urlsplit(url)
+              query = [
+                  (key, value)
+                  for key, value in parse_qsl(
+                      parts.query,
+                      keep_blank_values=True,
+                  )
+                  if not key.lower().startswith("utm_")
+                  and key.lower() not in {
+                      "fbclid", "gclid"
+                  }
+              ]
+              return urlunsplit((
+                  parts.scheme.lower(),
+                  parts.netloc.lower(),
+                  parts.path.rstrip("/"),
+                  urlencode(sorted(query)),
+                  "",
+              ))
+
+          # 발행 확정 기록은 새 JSON 파일로 추가합니다.
+          # 기존 파일을 수정하거나 덮어쓰지 않습니다.
+          published_titles = set()
+          published_urls = set()
+          ledger_files = sorted(
+              Path("data/v5/published").glob("*.json")
+          )
+
+          for path in ledger_files:
+              ledger = json.loads(
+                  path.read_text(encoding="utf-8")
+              )
+              if ledger.get("status") != "published":
+                  continue
+
+              for article in ledger.get("articles", []):
+                  key = title_key(
+                      article.get("title", "")
+                  )
+                  if key:
+                      published_titles.add(key)
+
+                  for field in (
+                      "original_url", "rss_url"
+                  ):
+                      key = url_key(
+                          article.get(field, "")
+                      )
+                      if key:
+                          published_urls.add(key)
+
+          candidates = []
+          source_runs = []
+          source_errors = []
+
+          # 같은 발행일의 수집 결과만 통합합니다.
+          for path in sorted(
+              raw_root.glob("*/latest.json")
+          ):
+              payload = json.loads(
+                  path.read_text(encoding="utf-8")
+              )
+              generated = dt.datetime.fromisoformat(
+                  payload["generated_at"]
+              ).astimezone(kst)
+
+              # 기존 V4 결과도 달력 날짜 기준으로 판정합니다.
+              target = (
+                  generated.date()
+                  if generated.hour < 12
+                  else generated.date()
+                  + dt.timedelta(days=1)
+              )
+
+              if target != edition_day:
+                  continue
+
+              source_runs.append(path.parent.name)
+              source_errors.extend(
+                  payload.get("errors", [])
+              )
+              candidates.extend(
+                  payload.get("articles", [])
+              )
+
+          candidates.sort(
+              key=lambda article:
+                  article.get("published_at", ""),
+              reverse=True,
+          )
+
+          seen_titles = set()
+          seen_urls = set()
+          result = []
+          duplicate_count = 0
+          published_count = 0
+
+          for article in candidates:
+              published_at = (
+                  dt.datetime.fromisoformat(
+                      article["published_at"]
+                  ).astimezone(kst)
+              )
+              if not (
+                  cutoff <= published_at
+                  <= now + dt.timedelta(hours=2)
+              ):
+                  continue
+
+              title = title_key(
+                  article.get("title", "")
+              )
+              urls = {
+                  url_key(article.get(field, ""))
+                  for field in (
+                      "original_url", "rss_url"
+                  )
+              } - {""}
+
+              if (
+                  title in published_titles
+                  or urls & published_urls
+              ):
+                  published_count += 1
+                  continue
+
+              if (
+                  title in seen_titles
+                  or urls & seen_urls
+              ):
+                  duplicate_count += 1
+                  continue
+
+              seen_titles.add(title)
+              seen_urls.update(urls)
+              result.append(article)
+
+          warnings = [
+              "제목이 다른 동일 사건은 편집 단계에서 추가 검토",
+              "원문 본문 검증과 사진 확보는 편집 단계에서 수행",
+          ]
+
+          if not ledger_files:
+              warnings.append(
+                  "기발행 이력 미등록: 과거 발행 기사 제외 미완료"
+              )
+
+          payload = {
+              "collector_version": "5-daily",
+              "generated_at": now.isoformat(
+                  timespec="seconds"
+              ),
+              "edition_date": edition,
+              "phase": (
+                  "morning_merge"
+                  if now.hour < 12
+                  else "evening_collection"
+              ),
+              "count": len(result),
+              "source_runs": source_runs,
+              "duplicate_count": duplicate_count,
+              "published_excluded_count":
+                  published_count,
+              "published_ledger_files":
+                  len(ledger_files),
+              "body_verified_count": 0,
+              "articles": result,
+              "errors": source_errors,
+              "warnings": warnings,
+          }
+
+          (output / "candidates.json").write_text(
+              json.dumps(
+                  payload,
+                  ensure_ascii=False,
+                  indent=2,
+              ),
+              encoding="utf-8",
+          )
+
+          rows = []
+          for article in result:
+              url = (
+                  article.get("original_url")
+                  or article["rss_url"]
+              )
+              rows.append(
+                  "<tr>"
+                  f"<td>{html.escape(article['category'])}</td>"
+                  f"<td><a href='{html.escape(url, quote=True)}'>"
+                  f"{html.escape(article['title'])}</a></td>"
+                  f"<td>{html.escape(article['source'])}</td>"
+                  f"<td>{html.escape(article['published_at'])}</td>"
+                  "</tr>"
+              )
+
+          page = (
+              "<!doctype html><html lang='ko'>"
+              "<meta charset='utf-8'>"
+              "<title>APF V5 기사 후보</title>"
+              "<style>"
+              "body{font:15px system-ui;max-width:1100px;"
+              "margin:30px auto;padding:16px}"
+              "td,th{padding:10px;text-align:left;"
+              "border-bottom:1px solid #ddd}"
+              "</style>"
+              f"<h1>APF TODAY INSIGHT · {edition}</h1>"
+              f"<p>통합 후보 {len(result)}건 / "
+              f"중복 제거 {duplicate_count}건</p>"
+              + "".join(
+                  f"<p>{html.escape(w)}</p>"
+                  for w in warnings
+              )
+              + "<table><tr><th>분야</th><th>제목</th>"
+              "<th>매체</th><th>게시 시각</th></tr>"
+              + "".join(rows)
+              + "</table></html>"
+          )
+
+          (output / "candidates.html").write_text(
+              page, encoding="utf-8"
+          )
+
+          print(
+              "Edition:", edition,
+              "Candidates:", len(result),
+              "Duplicates removed:", duplicate_count,
+              "Published excluded:", published_count,
+              "Output:", output,
+          )
+
+          if not result:
+              raise RuntimeError(
+                  "No candidates; diagnostic files saved"
+              )
+          PY
+
+      - name: Back up current results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apf-v5-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            data/v4/runs/*-${{ github.run_id }}-${{ github.run_attempt }}/
+            data/v5/runs/*-${{ github.run_id }}-${{ github.run_attempt }}/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Save only new files
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -- data/v4/runs/ data/v5/runs/
+
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+
+          if git diff --cached --name-status | awk '$1 != "A" { bad=1 } END { exit !bad }'; then
+            echo "Refusing to modify or delete existing files"
+            exit 1
+          fi
+
+          git commit -m "Add APF V5 daily collection ${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+
+          for attempt in 1 2 3; do
+            git fetch origin "$DEFAULT_BRANCH"
+            git rebase "origin/$DEFAULT_BRANCH"
+
+            if git push origin "HEAD:$DEFAULT_BRANCH"; then
+              exit 0
+            fi
+          done
+
+          echo "Push failed; check backup artifact"
+          exit 1
