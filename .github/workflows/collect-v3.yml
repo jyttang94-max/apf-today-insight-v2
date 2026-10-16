@@ -1,0 +1,55 @@
+
+name: APF V3 Article Link Collection
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 월~금 08:00 KST
+    - cron: '0 23 * * 0-4'
+
+    # 월~금 16:00 KST
+    - cron: '0 7 * * 1-5'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apf-v3-news-collection
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Collect article candidates and URLs
+        run: python scripts/collect_v3.py
+
+      - name: Save V3 candidate board
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add data/v3/
+
+          if ! git diff --cached --quiet; then
+            git commit -m "Update APF V3 article links"
+            git push
+
+      - name: Backup V3 collection results
+        uses: actions/upload-artifact@v4
+        with:
+          name: apf-v3-candidates
+          path: |
+            data/v3/latest.json
+            data/v3/latest.html
+          retention-days: 14
