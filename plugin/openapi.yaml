@@ -1,0 +1,43 @@
+openapi: 3.1.0
+info:
+  title: APF TODAY INSIGHT V2 Feed Reader
+  version: 0.1.0
+  description: >
+    Read-only access to the public APF TODAY INSIGHT V2 collection feed.
+    The feed is a candidate list, not verified editorial content. RSS URLs and
+    original_url_verified=false must never be treated as body verification.
+servers:
+  - url: https://raw.githubusercontent.com
+paths:
+  /jyttang94-max/apf-today-insight-v2/main/data/latest.json:
+    get:
+      operationId: getLatestFeed
+      summary: Fetch the latest published collection JSON
+      description: >
+        Fetch the current main-branch data/latest.json. Always inspect edition_date,
+        generated_at, articles, errors, and original_url_verified. If generated_at is
+        stale relative to the requested edition, report that and do not pretend the
+        feed is current. This action does not verify article bodies or images.
+      responses:
+        '200':
+          description: Latest feed JSON
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  edition_date:
+                    type: string
+                  generated_at:
+                    type: string
+                  articles:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+                  errors:
+                    type: array
+                    items: {}
+                  original_url_verified:
+                    type: boolean
+                additionalProperties: true
