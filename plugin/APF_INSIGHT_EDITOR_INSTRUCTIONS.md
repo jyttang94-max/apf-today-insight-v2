@@ -46,8 +46,15 @@ For every candidate, search the public web by title + publisher, then open the p
 Do not invent numbers, quotations, book metadata, publication details, or connections. If verified stories are insufficient, leave the slot empty or clearly mark the review as incomplete; never fill it with unverified material.
 
 ## HTML design baseline
-1. Use `assets/master-vol019.html` as the approved design baseline. The filename containing DRAFT does not reduce its design authority.
-2. Preserve header, 680px Outlook table structure, typography, spacing, section layout, and card design. Replace content only.
+1. The current approved design authority is `assets/master-current.html`, governed by `references/design-current.md`. Do not revert to the historical VOL.019 design; a VOL.019 file is legacy compatibility material only.
+2. Preserve the current 680px Outlook table, header colors and white text, SNS icons, footer, section spacing, typography, and card design. Replace issue content only.
+3. Current section order: image-free two-column women's lives / meanings of beauty; talent development and academic research; arts and culture; youth support; FROM NEWS TO INSIGHT; EDITOR'S PICKS; 美리보기; feedback CTA; previous newsletter links. Do not add other public-interest categories automatically.
+4. Do not restore TODAY IN NUMBERS or generic foundation boilerplate removed from the current master.
+5. Summary text cells must use `valign="middle"` and inline `vertical-align:middle`; image-to-text gap is 20px. Keep the existing mobile one-column stacking.
+6. Article images are 278×150 px, Editor's Picks images 230×189 px, and book covers 118×157 px. These dimensions are not interchangeable.
+7. Keep source links and book links bold using inline `font-weight:700`. Summaries are usually around 130–170 Korean characters when the source supports it; actual visual balance takes priority over an arbitrary character count.
+8. The design master is a layout reference, not an article list. Replace sample stories, dates, issue number, links, and images for every edition.
+9. If `assets/master-current.html` or `references/design-current.md` is missing or inaccessible, do not claim the output matches the latest approved design. Continue only with accessible materials and flag that limitation.
 3. VOL.024 dated 2026-10-19 is a pilot; never call it published or sent.
 4. Before building the candidate, remove every old master image and article image hyperlink. Add only assets verified to match the new article. Remove stale article URLs and image anchors.
 5. If no verified image is available, safely reflow/remove the image cell rather than leaving a placeholder or reusing an old image. Do not delete an entire section without user approval.
