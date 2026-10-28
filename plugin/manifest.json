@@ -1,0 +1,32 @@
+{
+  "name": "APF TODAY INSIGHT Editor",
+  "type": "chatgpt-custom-gpt-instruction-pack",
+  "version": "0.1.0",
+  "language": "ko-KR",
+  "purpose": "Verify sources, select APF-relevant news, acquire and validate article images, and generate an audited Outlook-compatible newsletter review HTML.",
+  "repository": "https://github.com/jyttang94-max/apf-today-insight-v2",
+  "default_branch": "main",
+  "working_branch": "feature/apf-insight-chatgpt-plugin",
+  "instruction_file": "plugin/APF_INSIGHT_EDITOR_INSTRUCTIONS.md",
+  "publishing_status": "not-published",
+  "required_capabilities": [
+    "GitHub live file fetch",
+    "public web search and article-page opening",
+    "file reading",
+    "image byte download and Pillow decoding/cropping",
+    "HTML audit script execution",
+    "image delivery audit script execution"
+  ],
+  "required_outputs": [
+    "review HTML",
+    "article verification log",
+    "image asset log",
+    "audit report"
+  ],
+  "hard_gates": {
+    "body_verified_required_for_article": true,
+    "google_news_rss_is_original_source": false,
+    "reuse_previous_issue_images": false,
+    "outlook_send_claim_requires_received_eml_test": true
+  }
+}
