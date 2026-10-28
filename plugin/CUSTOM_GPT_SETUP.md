@@ -1,45 +1,44 @@
-# APF TODAY INSIGHT Editor — Custom GPT setup and acceptance checklist
+# APF TODAY INSIGHT Plugin — setup and acceptance checklist
 
-## Current implementation stage
-This repository branch contains the instruction pack and a read-only OpenAPI action for the public V2 feed. It is not a published ChatGPT plugin and does not itself provide image processing, web browsing, file execution, or Outlook send/receive verification.
+## Purpose
+Prepare a review-only APF TODAY INSIGHT newsletter from the GitHub V2 candidate feed. This repository contains a starter plugin manifest, editor instructions, and a read-only OpenAPI feed action. These files do not by themselves prove that a plugin is installed, published, or executable in ChatGPT.
 
-## Configure the private Custom GPT
-1. In ChatGPT, open Explore GPTs / Create (or the GPT editor available to your account) and create a private GPT named **APF TODAY INSIGHT Editor**.
-2. Copy `plugin/APF_INSIGHT_EDITOR_INSTRUCTIONS.md` into the GPT Instructions field.
-3. Add `plugin/openapi.yaml` as an Action schema if Actions are available in your workspace. The action is read-only and public; no API key is needed for this raw GitHub feed endpoint.
-4. Upload these Knowledge files manually; repository files are not automatically attached to GPT Knowledge:
-   - `references/operating-manual.md`
-   - `references/v2-pilot.md`
-   - `assets/master-vol019.html`
-   - `references/original-verification.md`
-   - `references/image-pipeline.md`
-   - `references/source-image-separation.md`
-   - `references/photo-book-policy.md`
-   - `references/workflow.md`
-   - `scripts/audit_html.py`
-   - `scripts/audit_image_delivery.py`
-   - selected prior issues / published and excluded ID ledgers
-5. Enable web search/browsing and code/data-analysis capabilities if available. Test actual article-page opening and actual image-byte processing separately.
-6. Keep the GPT private until every acceptance test below passes.
+## Current implementation limits
+- `plugin/openapi.yaml` reads only the public `main/data/latest.json` feed. It does not fetch publisher article bodies, verify image bytes, generate/crop images, run local Python scripts, render HTML, or send Outlook email.
+- Editorial verification, image handling, HTML editing, and audit steps require capabilities/tools that are actually available in the active ChatGPT plugin runtime.
+- Never describe an unavailable tool or untested feature as working.
+- Never send an email or merge/publish changes without the user's explicit approval.
 
-## Repository prerequisite gap
-At the time this checklist was created, the default branch did not contain `references/` (the GitHub API returned 404 for that directory), so the two required documents and other references need to be committed or uploaded before the GPT can be fully configured. Never claim the GPT has read files that were not provided.
+## Current design authority
+- Use `assets/master-current.html` as the current approved design baseline.
+- Use `references/design-current.md` for the current design rules.
+- Do not revert to the historical VOL.019 design. Any legacy VOL.019 file is compatibility material only.
+- If either current design file is missing from the branch or unavailable to the runtime, stop short of claiming design-compliant HTML has been generated; use only the supplied files and explicitly flag the missing dependency.
+
+## Setup
+1. Open the ChatGPT Plugins page and choose **Add → Create plugin**.
+2. Follow the plugin creator's prompts. Provide the repository URL: https://github.com/jyttang94-max/apf-today-insight-v2
+3. Ask it to inspect and reuse:
+   - `plugin/plugin.json`
+   - `plugin/APF_INSIGHT_EDITOR_INSTRUCTIONS.md`
+   - `plugin/openapi.yaml`
+   - `references/design-current.md`
+   - `assets/master-current.html`
+   - verification and image-audit scripts, when present and executable
+4. Keep the plugin private while testing.
+5. Confirm which repository files were actually imported and which tools the plugin can actually call. Do not assume a GitHub repository is automatically loaded as knowledge.
 
 ## Acceptance tests
-- [ ] The action fetches current `data/latest.json` and displays both `edition_date` and `generated_at`.
-- [ ] A stale feed is flagged, not treated as today's feed.
-- [ ] Google News RSS links are not treated as publisher originals.
-- [ ] Headline-only matches are excluded unless article body facts were checked.
-- [ ] Duplicate-event checks use published/excluded ledgers and available issues; incomplete history is disclosed.
-- [ ] Only `body_verified=true` stories appear in HTML cards.
-- [ ] Article images are downloaded as bytes, decoded with Pillow, visually matched, and cropped/resized to master dimensions.
-- [ ] Prior issue images and stale article URLs are absent from the candidate.
-- [ ] The 美리보기 title, author, edition, cover, description, official link, and topical connection are freshly verified.
-- [ ] Both audit scripts run and their actual outputs are retained.
-- [ ] Desktop/mobile render checks are completed.
-- [ ] Outlook delivery is marked unverified until a real test email and received EML/MIME are checked.
+- [ ] Latest feed fetch succeeds and shows `edition_date`, `generated_at`, `articles`, and `errors`.
+- [ ] Stale feed is flagged, never silently treated as current.
+- [ ] Google News RSS is not treated as an original publisher article.
+- [ ] Only articles whose actual body facts were checked are included.
+- [ ] Event-level duplicates are checked against available published/excluded ledgers and previous issues; missing history is disclosed.
+- [ ] Image source, file bytes, decoded format, dimensions, article match, rights status, and embedding are recorded.
+- [ ] HTML follows the current master, contains no stale article links/images, and preserves Outlook table layout.
+- [ ] Available audit scripts actually run and outputs are retained.
+- [ ] Desktop/mobile rendering is checked where tools permit.
+- [ ] Outlook delivery remains unverified until a real received message and EML/MIME are inspected.
 
-## Do not automate these without explicit approval
-- Sending a newsletter email.
-- Merging the feature branch into main.
-- Publishing the GPT publicly.
+## Do not claim without evidence
+Plugin installation, publication, tool connectivity, web article verification, image processing, audit execution, browser rendering, and Outlook delivery must each be marked verified only after the corresponding test passes.
