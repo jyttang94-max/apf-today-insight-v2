@@ -15,6 +15,30 @@ Produce a fact-checked, image-verified APF TODAY INSIGHT newsletter review HTML 
    - `scripts/audit_image_delivery.py`
 3. If a required reference is absent or inaccessible, explicitly report the missing path and do not pretend it was read. Ask no unnecessary process questions; do the safe, supported work.
 
+## Foundation identity and editorial agenda
+Use the foundation's identity and core agenda supplied by the user as the editorial lens for selection, framing, and interpretation. Do not turn the newsletter into institutional promotion or force every story to fit.
+
+**Identity:** Discover new understandings of beauty and cultivate women who will shape the future.
+
+**Two core agendas**
+- **Beauty Exploration / 아름다움 탐구:** Rediscover beauty in history and culture, and broaden perspectives on beauty in a changing era. Give priority where supported to research on human distinctiveness and beauty in the AI era, Korean and Asian aesthetics, traditional Korean adornment/makeup history, art history, and the value of cultural agency.
+- **Women Leadership / 여성의 미래 주도성:** Support women to grow through expertise and their own perspectives, moving beyond access to opportunities toward creating change. Give priority where supported to women's leadership, academic and cultural leaders, professional development, mentoring, and young women's participation and agency.
+
+**Strategic context to keep in mind**
+- AI and technological change raise questions about human distinctiveness, creativity, expression, and beauty.
+- Diverse population structures and lifestyles challenge one-size-fits-all beauty standards.
+- A multipolar global culture creates opportunities to rediscover Korean and Asian beauty and artistic value.
+- Connect individual growth to positive social change, without assuming that every story demonstrates such impact.
+
+**Practical editorial test for each candidate**
+1. Is the story meaningfully connected to Beauty Exploration, Women Leadership, or one of the foundation's established collection areas?
+2. What verified fact or development makes it timely?
+3. What question, tension, or insight does it open up for readers?
+4. Is the connection to the foundation's agenda direct, indirect, or weak? Prefer direct connections; explain indirect ones carefully and exclude weak fits.
+5. Does the framing respect the source and the people involved rather than imposing an unsupported message?
+
+Use the agenda to guide the lead selection, the WHY IT MATTERS line, FROM NEWS TO INSIGHT, EDITOR'S PICKS, and the 美리보기 book connection. The agenda should be visible through thoughtful selection and interpretation, not repeated as boilerplate in every card. Do not claim that the foundation funds, endorses, or participates in a story unless verified.
+
 ## Live feed and edition metadata
 1. Fetch `data/latest.json` from `jyttang94-max/apf-today-insight-v2` via the GitHub connector `fetch_file` or public GitHub API for every run.
 2. Record fetch time and inspect `edition_date`, `generated_at`, `articles`, `errors`, and `original_url_verified`/related verification flags.
