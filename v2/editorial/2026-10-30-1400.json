@@ -41,6 +41,42 @@
       ],
       "image_status": "not_downloaded",
       "event_key": "2026-chungnam-youth-future-center-opening"
+    },
+    {
+      "candidate_id": "9178449a26a96f7812e0",
+      "slot": "women",
+      "title": "제주 여성 12명의 삶, 영상 아카이브로 기록",
+      "lead": "지역의 역사와 문화를 이어 온 여성들의 경험을 공적 기록으로 남깁니다.",
+      "body": "제주특별자치도가 70대 이상 제주 여성 12명의 생애를 기록한 영상 제작 사업을 완료했다. 제주MBC ‘제주여성 허스토리6’은 11월 1일부터 전통문화, 복식, 예술, 미용 분야 여성 6명의 삶을 소개하고, KBS제주 ‘할망상담소 2026’은 11월 9일부터 해녀와 장인 등 6명의 경험을 전한다. 제주도는 영상 자료를 여성사 연구와 교육자료로 활용할 계획이다.",
+      "publisher": "헤드라인제주",
+      "published_at": "2026-10-30T10:18:00+09:00",
+      "original_url": "https://www.headlinejeju.co.kr/news/articleView.html?idxno=601309",
+      "body_verified": true,
+      "confirmed_facts": [
+        "70대 이상 여성 12명 기록",
+        "제주MBC 11월 1일 방송 시작",
+        "KBS제주 11월 9일 방송 시작"
+      ],
+      "image_status": "not_required",
+      "event_key": "2026-jeju-women-life-history-archive"
+    },
+    {
+      "candidate_id": "1721bc914d02fc678816",
+      "slot": "arts",
+      "title": "서울 연극 지원체계 토론, 창작 준비 과정까지 지원해야",
+      "lead": "제작비 중심의 단기 지원에서 예술인의 지속 가능한 활동 기반으로 논의를 확장합니다.",
+      "body": "10월 29일 서울시의회에서 열린 연극 지원체계 토론회에서는 서울에 전국 연극인의 53.1%가 집중된 반면 주요 창작지원사업 선정률은 10% 안팎이라는 지적이 나왔다. 발제자들은 다년 지원, 창작 준비 기간에 대한 보상, 경력단절 방지와 관객 기반 확대를 제안했다. 토론에서 제시된 개선안은 향후 정책 검토 과제이며 시행이 확정된 사업은 아니다.",
+      "publisher": "서울Pn",
+      "published_at": "2026-10-30T10:08:00+09:00",
+      "original_url": "https://go.seoul.co.kr/news/newsView.php?id=20261030500082",
+      "body_verified": true,
+      "confirmed_facts": [
+        "10월 29일 토론회 개최",
+        "발제자의 전국 연극인 서울 집중 53.1% 수치",
+        "창작지원 선정률 약 10% 주장"
+      ],
+      "image_status": "not_downloaded",
+      "event_key": "2026-seoul-theater-support-system-forum"
     }
   ],
   "insight": {
@@ -48,5 +84,5 @@
     "body": "교사 연구분임과 청년미래센터는 서로 다른 분야이지만, 일회성 참여 이후의 연결 구조를 설계했다는 점에서 비교할 수 있다. 서울교육청은 현장의 공동연구를 전문가 코칭과 학술지 투고로 연결하고, 충남도는 청년 발굴을 상담과 사례 관리, 지역 자원 연계로 이어간다. 다만 두 사업 모두 장기 성과는 아직 확인되지 않았다.",
     "question": "APF 지원사업에서는 참여 이후의 연구 확산과 후속 지원을 어떤 지표로 추적하고 있는가?"
   },
-  "status": "partial_editorial_draft_not_for_publication"
+  "status": "four_verified_stories_beauty_pending"
 }
