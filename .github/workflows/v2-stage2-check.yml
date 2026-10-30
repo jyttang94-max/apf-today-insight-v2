@@ -105,7 +105,9 @@ jobs:
           PY
       - name: Five-category balanced editorial queue
         run: |
-          python v2/export_balanced_queue.py --candidates data/v5/runs/20261030T110906-40989986979-1/candidates.json --per-category 20 --out /tmp/apf_balanced_queue.json
+          LATEST=$(python v2/select_latest_run.py --root data/v5/runs)
+          echo "Using collector run: $LATEST"
+          python v2/export_balanced_queue.py --candidates "$LATEST" --per-category 20 --out /tmp/apf_balanced_queue.json
           python - <<'PY'
           import json
           d=json.load(open('/tmp/apf_balanced_queue.json'))
