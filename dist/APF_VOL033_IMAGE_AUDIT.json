@@ -1,0 +1,32 @@
+{
+  "0": {
+    "url": "https://www.otoki.com/pds/editor/2610/6243e43e3dc54fb3a82e923b31708249.jpg",
+    "size": [
+      278,
+      150
+    ],
+    "sha256": "26f9e08c400323b72ebaf576985a14dfe994de956a42b6cbf47fc90703d680c4",
+    "bytes": 11456
+  },
+  "3": {
+    "url": "https://img.asiatoday.co.kr/file/2026y/10m/27d/20261027000732383_1793054377_1.jpg",
+    "size": [
+      230,
+      189
+    ],
+    "sha256": "3668f7405d9e78c2cbb7abb7f51cb8436dc62e4179ed79a02ab2ae267cfd3adc",
+    "bytes": 12136
+  },
+  "1": {
+    "sha256": "bc0ab1dd947e419f78729c0f0aa9569eb45dfe5e685f83642cffa0e5f7b4995a",
+    "bytes": 15813
+  },
+  "2": {
+    "sha256": "5fa0ef28cb29fa59066179651c1af9b2a1e3775223abe69acd82ec720353b856",
+    "bytes": 10896
+  },
+  "4": {
+    "sha256": "02a3324d239d801077a79c86510153e47558cd7519ad7e05e89e54420a939ff1",
+    "bytes": 4622
+  }
+}
