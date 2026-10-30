@@ -25,6 +25,7 @@ jobs:
           from PIL import Image
           root=pathlib.Path("sources")
           urls={
+           "beauty":"https://www.news21tongsin.co.kr/news/308730",
            "women":"https://www.headlinejeju.co.kr/news/articleView.html?idxno=601309",
            "academic":"https://www.news1.kr/society/education/6336768",
            "academic2":"https://www.smartbizn.com/news/articleView.html?idxno=157972",
