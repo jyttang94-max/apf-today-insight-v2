@@ -29,14 +29,14 @@ def main():
   buff=io.BytesIO();output.save(buff,format="JPEG",quality=88)
  jpeg=buff.getvalue()
  html=Path(a.html).read_text(encoding="utf-8")
- m=re.search(r'(<img\\b[^>]*?\\bsrc=")(data:image/jpeg;base64,[^"]+)(")',html,re.I|re.S)
+ m=re.search(r'(<img\b[^>]*?\bsrc=")(data:image/jpeg;base64,[^"]+)(")',html,re.I|re.S)
  if not m:raise RuntimeError("No existing embedded JPEG image slot found")
  data_uri="data:image/jpeg;base64,"+base64.b64encode(jpeg).decode("ascii")
  html=html[:m.start(2)]+data_uri+html[m.end(2):]
  notice='<div style="padding:15px;background:#fff0c2;color:#603700;font-weight:bold;text-align:center">EXTERNAL IMAGE DOWNLOAD TEST — NOT FOR PUBLICATION. First image replaced from external article. Other article text unchanged.</div>'
  html=re.sub(r'(<body[^>]*>)',lambda z:z.group(1)+notice,html,count=1,flags=re.I)
  out=Path(a.out);out.parent.mkdir(parents=True,exist_ok=True);out.write_text(html,encoding="utf-8")
- check=re.search(r'<img\\b[^>]*?\\bsrc="(data:image/jpeg;base64,[^"]+)"',out.read_text(encoding="utf-8"),re.I|re.S)
+ check=re.search(r'<img\b[^>]*?\bsrc="(data:image/jpeg;base64,[^"]+)"',out.read_text(encoding="utf-8"),re.I|re.S)
  assert check and base64.b64decode(check.group(1).split(",",1)[1])==jpeg
  assert Image.open(io.BytesIO(jpeg)).size==(278,150)
  report={"result":"PASS","article_url":a.article_url,"image_url":photo_url,"downloaded_bytes":len(photo),"source_sha256":hashlib.sha256(photo).hexdigest(),"jpeg_sha256":hashlib.sha256(jpeg).hexdigest(),"output_pixels":[278,150],"html":str(out),"notice":"Visual appearance and image/article correspondence require editorial review; do not publish"}
