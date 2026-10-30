@@ -57,3 +57,17 @@ try:
  r=S.get(u,timeout=20,allow_redirects=True)
  print("GOOGLE REDIRECT",r.status_code,r.url,"kmib" in r.text.lower(),r.text[:140].replace("\n"," "))
 except Exception as e:print("GOOGLE REDIRECT ERR",repr(e))
+
+for label,url in [
+ ("NEWS1","https://www.news1.kr/industry/general-industry/6334458"),
+ ("APF SEARCH","https://www.google.com/search?q="+quote('site:ascf.amorepacific.co.kr "동아시아 전통 인테리어 장식과 미"')),
+ ("APF SEARCH2","https://www.google.com/search?q="+quote('"동아시아 전통 인테리어 장식과 미" "아모레퍼시픽재단"')),
+ ("SAMSUNG","https://www.kmib.co.kr/search?query="+quote('중소기업에 AI 기술 전수 자립준비청년'))]:
+ try:
+  r=S.get(url,timeout=20)
+  sp=BeautifulSoup(r.text,"html.parser")
+  print("PAGE",label,r.status_code,r.url,"TITLE",sp.title.get_text(" ",strip=True) if sp.title else "")
+  print("META",label,[(m.get("property"),m.get("content")) for m in sp.select("meta[property]") if m.get("property") in ("og:image","og:title","article:published_time")][:5])
+  print("TEXT",label,sp.get_text(" ",strip=True)[:2000])
+  print("IMAGES",label,[(im.get("src"),im.get("alt")) for im in sp.select("article img, .article img, .view img, figure img")][:8])
+ except Exception as e:print("PAGE ERROR",label,repr(e))
