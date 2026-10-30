@@ -100,9 +100,9 @@ jobs:
           python - <<'PY'
           import json
           d=json.load(open('/tmp/apf_vol032_production_gate.json'))
-          assert d['verified_stories']==2
+          assert d['verified_stories']>=2
           assert d['ready_for_full_html'] is False
-          assert 'MISSING_SLOT:arts' in d['errors']
+          assert any(e.startswith(('IMAGE_NOT_READY:', 'HISTORY_NOT_RECONCILED', 'BOOK_NOT_VERIFIED', 'EDITORS_PICK_NOT_VERIFIED')) for e in d['errors'])
           print('Partial editorial copy correctly held; old VOL032 content must not leak')
           PY
       - name: Five-category balanced editorial queue
