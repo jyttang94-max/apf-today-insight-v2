@@ -103,6 +103,17 @@ jobs:
           assert 'MISSING_SLOT:arts' in d['errors']
           print('Partial editorial copy correctly held; old VOL032 content must not leak')
           PY
+      - name: Five-category balanced editorial queue
+        run: |
+          python v2/export_balanced_queue.py --candidates data/v5/runs/20261030T110906-40989986979-1/candidates.json --per-category 20 --out /tmp/apf_balanced_queue.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/apf_balanced_queue.json'))
+          assert len(d['queues'])==5
+          assert all(len(v)==20 for v in d['queues'].values())
+          assert all(x['verification_status']=='unverified' for v in d['queues'].values() for x in v)
+          print('All five categories exported: 100 editorial candidates')
+          PY
       - name: Preserve editorial handoff diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -115,5 +126,6 @@ jobs:
             /tmp/apf_history_index.json
             /tmp/apf_editorial_review.json
             /tmp/apf_vol032_production_gate.json
+            /tmp/apf_balanced_queue.json
           if-no-files-found: warn
           retention-days: 14
