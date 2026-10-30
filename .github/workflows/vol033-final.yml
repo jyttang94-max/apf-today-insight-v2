@@ -1,0 +1,25 @@
+name: VOL033 Final Embedded Photos
+on:
+  push:
+    paths:
+      - '.github/workflows/vol033-final.yml'
+      - 'scripts/finalize_vol033_images.py'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install beautifulsoup4 pillow requests
+      - run: python scripts/finalize_vol033_images.py
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist/APF_TODAY_INSIGHT_VOL033_20261030_FINAL.html dist/APF_VOL033_IMAGE_AUDIT.json
+          git commit -m "Publish VOL033 validated Base64 image HTML"
+          git push
