@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - '.github/workflows/finish-vol033-editorial.yml'
+      - 'scripts/finish_vol033_editorial.py'
   workflow_dispatch:
 permissions:
   contents: write
