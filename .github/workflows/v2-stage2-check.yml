@@ -58,3 +58,15 @@ jobs:
           assert d['resolved']+d['unresolved']==20
           print('Publisher URLs resolved:',d['resolved'],'unresolved:',d['unresolved'])
           PY
+
+      - name: Editorial handoff retains unresolved articles
+        run: |
+          python v2/export_editorial_queue.py --candidates data/v5/runs/20261029T224853-40885391548-1/candidates.json --resolution /tmp/apf_resolved_urls.json --limit 20 --out /tmp/apf_editorial_queue.json
+          python - <<'PY'
+          import json
+          q=json.load(open('/tmp/apf_editorial_queue.json'))
+          assert q['total']==20
+          assert all(x['editorial_status']=='needs_independent_search' for x in q['candidates'])
+          assert all(x['search_queries'] for x in q['candidates'])
+          print('Editorial handoff passed: 20 candidates preserved for independent search')
+          PY
