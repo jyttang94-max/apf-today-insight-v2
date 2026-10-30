@@ -92,6 +92,17 @@ jobs:
           assert d['total']>0
           print('Editorial review report:',d['total'],'candidates,',d['review_candidates'],'evidence-backed review candidates')
           PY
+      - name: VOL032 production readiness from real editorial copy
+        run: |
+          python v2/vol032_production_gate.py --editorial v2/editorial/2026-10-30-1400.json --out /tmp/apf_vol032_production_gate.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/apf_vol032_production_gate.json'))
+          assert d['verified_stories']==2
+          assert d['ready_for_full_html'] is False
+          assert 'MISSING_SLOT:arts' in d['errors']
+          print('Partial editorial copy correctly held; old VOL032 content must not leak')
+          PY
       - name: Preserve editorial handoff diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -103,5 +114,6 @@ jobs:
             /tmp/apf_original_probe.json
             /tmp/apf_history_index.json
             /tmp/apf_editorial_review.json
+            /tmp/apf_vol032_production_gate.json
           if-no-files-found: warn
           retention-days: 14
