@@ -48,3 +48,13 @@ jobs:
           assert all(x['body_verified'] is False for x in d['results'])
           print('Original probe statuses:',{s:sum(x['verification_status']==s for x in d['results']) for s in set(x['verification_status'] for x in d['results'])})
           PY
+
+      - name: Google News publisher URL resolution diagnostic
+        run: |
+          python v2/resolve_original_urls.py --candidates data/v5/runs/20261029T224853-40885391548-1/candidates.json --out /tmp/apf_resolved_urls.json --limit 20
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/apf_resolved_urls.json'))
+          assert d['resolved']+d['unresolved']==20
+          print('Publisher URLs resolved:',d['resolved'],'unresolved:',d['unresolved'])
+          PY
