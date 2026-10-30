@@ -71,6 +71,17 @@ jobs:
           print('Editorial handoff passed: 20 candidates preserved for independent search')
           PY
 
+      - name: Build provisional history index
+        run: |
+          python v2/build_history_index.py dist/APF_TODAY_INSIGHT_VOL033_20261030_FINAL.html --out /tmp/apf_history_index.json
+          python - <<'PY'
+          import json
+          data=json.load(open('/tmp/apf_history_index.json'))
+          assert data['issues_found']==1
+          assert data['coverage_complete'] is False
+          assert all(r['status']=='unconfirmed_issue_link' for r in data['records'])
+          print('History index prepared:',len(data['records']),'link hints; no sent claims')
+          PY
       - name: Preserve editorial handoff diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -80,5 +91,6 @@ jobs:
             /tmp/apf_editorial_queue.json
             /tmp/apf_resolved_urls.json
             /tmp/apf_original_probe.json
+            /tmp/apf_history_index.json
           if-no-files-found: warn
           retention-days: 14
