@@ -52,7 +52,7 @@ def classify(candidates, registry, evidence):
         raise ValueError("invalid candidates payload")
     if candidates.get("phase") not in ("morning_merge","evening_collection"):
         raise ValueError("unrecognized phase")
-    if not re.fullmatch(r"\\d{4}-\\d{2}-\\d{2}",str(candidates.get("edition_date",""))):
+    if not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}",str(candidates.get("edition_date",""))):
         raise ValueError("missing edition_date")
     if not isinstance(evidence,dict): raise ValueError("evidence must be object keyed by candidate ID")
     prior=[r for r in registry["records"] if r["status"] in ("published","approved")]
