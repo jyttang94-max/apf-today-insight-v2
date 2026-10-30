@@ -82,6 +82,16 @@ jobs:
           assert all(r['status']=='unconfirmed_issue_link' for r in data['records'])
           print('History index prepared:',len(data['records']),'link hints; no sent claims')
           PY
+      - name: Editorial review with evidence and provisional history
+        run: |
+          python v2/editorial_review_report.py --candidates data/v5/runs/20261029T224853-40885391548-1/candidates.json --evidence v2/verified_articles.json --history /tmp/apf_history_index.json --out /tmp/apf_editorial_review.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/apf_editorial_review.json'))
+          assert d['publication_approved'] is False
+          assert d['total']>0
+          print('Editorial review report:',d['total'],'candidates,',d['review_candidates'],'evidence-backed review candidates')
+          PY
       - name: Preserve editorial handoff diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -92,5 +102,6 @@ jobs:
             /tmp/apf_resolved_urls.json
             /tmp/apf_original_probe.json
             /tmp/apf_history_index.json
+            /tmp/apf_editorial_review.json
           if-no-files-found: warn
           retention-days: 14
