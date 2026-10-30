@@ -1,7 +1,7 @@
 name: Inspect VOL033 sources
 on:
   push:
-    paths: ['.github/workflows/inspect-vol033.yml']
+    paths: ['.github/workflows/inspect-vol033.yml', 'scripts/inspect_vol033_sources.py']
 permissions:
   contents: read
 jobs:
