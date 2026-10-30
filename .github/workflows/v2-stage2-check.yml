@@ -27,3 +27,24 @@ jobs:
           assert data['held']==data['total']
           print('Fail-closed smoke test passed:',data['total'],'held')
           PY
+
+      - name: Issue inventory smoke test
+        run: |
+          python v2/inventory_issues.py dist/APF_TODAY_INSIGHT_VOL033_20261030_FINAL.html --out /tmp/apf_issue_inventory.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/apf_issue_inventory.json'))
+          assert len(d['issues'])==1
+          assert d['issues'][0]['publication_status']=='unconfirmed'
+          print('Issue inventory:',d['issues'][0]['vol'],'links:',len(d['issues'][0]['links']))
+          PY
+      - name: Original URL availability diagnostic
+        run: |
+          python v2/probe_originals.py --candidates data/v5/runs/20261029T224853-40885391548-1/candidates.json --out /tmp/apf_original_probe.json --limit 20
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/apf_original_probe.json'))
+          assert d['probed']==20
+          assert all(x['body_verified'] is False for x in d['results'])
+          print('Original probe statuses:',{s:sum(x['verification_status']==s for x in d['results']) for s in set(x['verification_status'] for x in d['results'])})
+          PY
