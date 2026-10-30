@@ -34,7 +34,7 @@ jobs:
            "youth":"https://www.newspim.com/news/view/20261030000422",
            "editor":"https://www.newspim.com/news/view/20261030000731",
            "book":"https://www.apgroup.com/int/ko/misc/news/2018-03-30.html",
-           "book2":"https://www.yes24.com/product/goods/117313796"
+           "book2":"https://www.yes24.com/Product/Goods/44326581"
           }
           def work(pair):
            key,url=pair; out={"url":url,"images":[]}
