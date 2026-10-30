@@ -118,6 +118,19 @@ jobs:
           assert all(x['verification_status']=='unverified' for v in d['queues'].values() for x in v)
           print('All five categories exported: 100 editorial candidates')
           PY
+      - name: Render actual new-copy editorial proof
+        run: |
+          python v2/render_editorial_proof.py --editorial v2/editorial/2026-10-30-1400.json --out /tmp/apf_editorial_proof.html
+          python - <<'PY'
+          from pathlib import Path
+          h=Path('/tmp/apf_editorial_proof.html').read_text(encoding='utf-8')
+          assert '제주 여성 12명의 생애' in h
+          assert '박항환 초대전' in h
+          assert '국립부경대, 4개국' not in h
+          assert 'data:image/' not in h
+          assert 'NOT FOR SENDING' in h
+          print('New editorial copy rendered without old article images')
+          PY
       - name: Preserve editorial handoff diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -131,5 +144,6 @@ jobs:
             /tmp/apf_editorial_review.json
             /tmp/apf_vol032_production_gate.json
             /tmp/apf_balanced_queue.json
+            /tmp/apf_editorial_proof.html
           if-no-files-found: warn
           retention-days: 14
