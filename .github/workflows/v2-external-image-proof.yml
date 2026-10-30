@@ -1,0 +1,30 @@
+name: APF External Image to HTML Proof
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  external-image-proof:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install Pillow==11.3.0
+      - name: Download original web photo and embed in VOL033
+        run: |
+          python v2/test_external_image_html.py \
+            --article-url 'https://www.betanews.net/article/view/beta202610260034' \
+            --html dist/APF_TODAY_INSIGHT_VOL033_20261030_FINAL.html \
+            --out /tmp/apf-external-photo-proof.html \
+            --report /tmp/apf-external-photo-proof.json
+      - name: Upload actual resulting HTML and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apf-external-photo-html-proof
+          path: |
+            /tmp/apf-external-photo-proof.html
+            /tmp/apf-external-photo-proof.json
+          if-no-files-found: warn
