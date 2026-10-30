@@ -26,3 +26,20 @@ for url in ["https://www.kmib.co.kr/article/view.asp?arcid=20261029500899","http
   r=S.get(url,timeout=15)
   print("KMIB",r.status_code,r.url,r.text[:200].replace("\n"," "))
  except Exception as e:print("KMIB ERR",str(e)[:160])
+
+from urllib.parse import quote
+for engine,url in [
+ ("bing","https://www.bing.com/search?q="+quote('"중소기업에 AI 기술 전수" "자립준비청년에 희망 사다리"')),
+ ("naver","https://search.naver.com/search.naver?where=news&query="+quote('중소기업에 AI 기술 전수 자립준비청년에 희망 사다리')),
+ ("google","https://www.google.com/search?q="+quote('"중소기업에 AI 기술 전수" "자립준비청년"'))]:
+ try:
+  r=S.get(url,timeout=20);sp=BeautifulSoup(r.text,"html.parser")
+  links=[(a.get_text(" ",strip=True)[:80],a.get("href","")) for a in sp.select("a[href]") if "kmib" in a.get("href","") or "news.naver.com" in a.get("href","")]
+  print("SEARCH",engine,r.status_code,json.dumps(links[:15],ensure_ascii=False)[:6000])
+ except Exception as e:print("SEARCH ERR",engine,repr(e))
+try:
+ r=S.get("https://ww2.asiatoday.co.kr/kn/view.php?key=20261027000732383",timeout=20)
+ sp=BeautifulSoup(r.text,"html.parser")
+ print("EDITOR META",[(m.get("property"),m.get("content")) for m in sp.select("meta[property]") if "image" in (m.get("property") or "")][:5])
+ print("EDITOR ARTICLE IMG",[(im.get("src"),im.get("data-src"),im.get("alt")) for im in sp.select("div.article img, div.view img, figure img, .news_view img")][:10])
+except Exception as e:print("EDITOR META ERR",repr(e))
