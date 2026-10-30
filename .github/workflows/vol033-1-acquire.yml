@@ -1,0 +1,78 @@
+name: VOL033-1 source acquisition
+on:
+  push:
+    branches: ['review/vol033-1-20261030']
+    paths: ['.github/workflows/vol033-1-acquire.yml']
+permissions:
+  contents: read
+jobs:
+  acquire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests beautifulsoup4 pillow
+      - name: Fetch original pages and images
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: |
+          mkdir -p sources
+          cat > /tmp/fetch.py <<'PY'
+          import requests,json,pathlib,concurrent.futures,urllib.parse,io
+          from bs4 import BeautifulSoup
+          from PIL import Image
+          root=pathlib.Path("sources")
+          urls={
+           "women":"https://www.headlinejeju.co.kr/news/articleView.html?idxno=601309",
+           "academic":"https://www.news1.kr/society/education/6336768",
+           "academic2":"https://www.smartbizn.com/news/articleView.html?idxno=157972",
+           "culture":"https://www.newswire.co.kr/newsRead.php?no=1045755",
+           "culture2":"https://koreaartnews.com/post/SNxHVMJ4",
+           "youth":"https://www.newspim.com/news/view/20261030000422",
+           "editor":"https://www.newspim.com/news/view/20261030000731",
+           "book":"https://www.apgroup.com/int/ko/misc/news/2018-03-30.html",
+           "book2":"https://www.yes24.com/product/goods/117313796"
+          }
+          def work(pair):
+           key,url=pair; out={"url":url,"images":[]}
+           try:
+            s=requests.Session();s.headers["User-Agent"]="Mozilla/5.0"
+            r=s.get(url,timeout=25);r.raise_for_status()
+            if r.encoding=="ISO-8859-1":r.encoding=r.apparent_encoding
+            soup=BeautifulSoup(r.text,"html.parser")
+            for el in soup(["script","style","nav","footer","header"]):el.decompose()
+            out["text"]=soup.get_text(" ",strip=True)
+            out["title"]=soup.title.get_text() if soup.title else ""
+            imgs=[]
+            for m in soup.select('meta[property="og:image"]'):
+             if m.get("content"):imgs.append((m["content"],"og:image"))
+            for im in soup.select("article img, #article-view-content-div img, #news_body_area img, .article img, .news_body img, .view_con img, .content img, img"):
+             src=im.get("data-src") or im.get("data-original") or im.get("src")
+             if src:imgs.append((src,im.get("alt","")))
+            seen=set()
+            for src,alt in imgs:
+             src=urllib.parse.urljoin(r.url,src)
+             if src in seen or not src.startswith("http"):continue
+             seen.add(src)
+             if len(out["images"])>=6:break
+             try:
+              ir=s.get(src,headers={"Referer":r.url},timeout=12);ir.raise_for_status()
+              im=Image.open(io.BytesIO(ir.content));w,h=im.size
+              if w<200 or h<120:continue
+              fn=key+"-"+str(len(out["images"]))+".jpg"
+              im.convert("RGB").save(root/fn,quality=90)
+              out["images"].append({"path":fn,"url":src,"alt":alt,"width":w,"height":h})
+             except Exception:pass
+           except Exception as e:out["error"]=str(e)
+           (root/(key+".json")).write_text(json.dumps(out,ensure_ascii=False),encoding="utf-8")
+           print(key, len(out.get("text","")),len(out["images"]),out.get("error",""))
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:list(ex.map(work,urls.items()))
+          PY
+          python /tmp/fetch.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vol033-1-sources
+          path: sources/
+          retention-days: 1
