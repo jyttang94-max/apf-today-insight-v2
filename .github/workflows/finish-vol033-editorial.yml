@@ -1,0 +1,24 @@
+name: Finish VOL033 Editorial
+on:
+  push:
+    paths:
+      - '.github/workflows/finish-vol033-editorial.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  finish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install beautifulsoup4 pillow
+      - run: python scripts/finish_vol033_editorial.py
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist/APF_TODAY_INSIGHT_VOL033_20261030_EDITORIAL_IMAGE_REVIEW.html
+          git commit -m "Finish VOL033 editorial image review"
+          git push
