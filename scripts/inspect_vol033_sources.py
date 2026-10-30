@@ -51,3 +51,9 @@ try:
  for item in root.findall(".//item")[:8]:
   print("GOOGLE NEWS",item.findtext("title"),item.findtext("link"))
 except Exception as e:print("GOOGLE NEWS ERR",repr(e))
+
+u="https://news.google.com/rss/articles/CBMiWEFVX3lxTE5ydXRySGJxZFBFVlZpb1NZSmlWN3d6NW51ckd5N2t2MDJrT0FydUNNd1hzNGJEMG5IcnAwVEJjczJqRWFHMFhXWWNXWFRTdWRoT0g2M2JmOUI?oc=5"
+try:
+ r=S.get(u,timeout=20,allow_redirects=True)
+ print("GOOGLE REDIRECT",r.status_code,r.url,"kmib" in r.text.lower(),r.text[:140].replace("\n"," "))
+except Exception as e:print("GOOGLE REDIRECT ERR",repr(e))
