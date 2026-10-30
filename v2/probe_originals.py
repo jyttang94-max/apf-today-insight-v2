@@ -11,7 +11,10 @@ from datetime import datetime,timezone
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlsplit
-from v2.stage2 import canonical_url
+try:
+    from v2.stage2 import canonical_url
+except ModuleNotFoundError:
+    from stage2 import canonical_url
 
 class PageText(HTMLParser):
     def __init__(self):
