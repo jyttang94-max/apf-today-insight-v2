@@ -43,3 +43,11 @@ try:
  print("EDITOR META",[(m.get("property"),m.get("content")) for m in sp.select("meta[property]") if "image" in (m.get("property") or "")][:5])
  print("EDITOR ARTICLE IMG",[(im.get("src"),im.get("data-src"),im.get("alt")) for im in sp.select("div.article img, div.view img, figure img, .news_view img")][:10])
 except Exception as e:print("EDITOR META ERR",repr(e))
+
+import xml.etree.ElementTree as ET
+rss="https://news.google.com/rss/search?q="+quote('"중소기업에 AI 기술 전수" "자립준비청년"')+"&hl=ko&gl=KR&ceid=KR:ko"
+try:
+ r=S.get(rss,timeout=20);root=ET.fromstring(r.content)
+ for item in root.findall(".//item")[:8]:
+  print("GOOGLE NEWS",item.findtext("title"),item.findtext("link"))
+except Exception as e:print("GOOGLE NEWS ERR",repr(e))
