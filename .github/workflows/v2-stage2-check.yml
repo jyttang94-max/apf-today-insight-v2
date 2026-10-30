@@ -1,0 +1,29 @@
+name: APF V2 Stage 2 Validation
+on:
+  push:
+    paths:
+      - 'v2/**'
+      - '.github/workflows/v2-stage2-check.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Unit tests
+        run: python -m unittest discover -s v2 -p 'test_*.py' -v
+      - name: Real candidate smoke test
+        run: |
+          python v2/stage2.py --candidates data/v5/runs/20261029T224853-40885391548-1/candidates.json --registry v2/publication_registry.json --evidence v2/verified_articles.json --out /tmp/stage2_report.json
+          python - <<'PY'
+          import json
+          data=json.load(open('/tmp/stage2_report.json'))
+          assert data['eligible']==0, 'unverified articles must not be eligible'
+          assert data['held']==data['total']
+          print('Fail-closed smoke test passed:',data['total'],'held')
+          PY
