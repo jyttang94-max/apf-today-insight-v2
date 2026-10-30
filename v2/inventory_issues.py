@@ -29,7 +29,7 @@ def inventory(paths):
     for path in paths:
         p=Path(path)
         name=p.name
-        match=re.search(r"VOL(\\d+)_([0-9]{8})",name,re.I)
+        match=re.search(r"VOL([0-9]+)_([0-9]{8})",name,re.I)
         if not match: continue
         parser=Extract()
         parser.feed(p.read_text(encoding="utf-8"))
