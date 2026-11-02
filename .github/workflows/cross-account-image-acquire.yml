@@ -20,25 +20,22 @@ jobs:
         run: |
           mkdir -p sources
           cat > /tmp/fetch.py <<'PY'
-          import requests,json,pathlib,concurrent.futures,urllib.parse,io,datetime
+          import requests,json,pathlib,concurrent.futures,urllib.parse,io,sys
           from bs4 import BeautifulSoup
           from PIL import Image
           root=pathlib.Path("sources")
-          urls={
-            "academic":"https://www.dailian.co.kr/news/view/1709405/27%EB%85%84-%EB%A7%8C%EC%97%90-%ED%95%9C%EA%B5%AD-%EC%98%A8-%EC%95%84%ED%83%9C-%EC%9D%98%EA%B3%B5%ED%95%99%EA%B3%84-2026",
-            "culture":"https://web.dongguk.ac.kr/article/wisenews/detail/521037",
-            "youth":"https://www.kgdm.co.kr/news/articleView.html?idxno=2016904",
-            "editor":"https://m.pressian.com/pages/articles/2026110208530977978",
-            "book":"https://nwww.newsis.com/view/NISX20261102_0003850338"
-          }
+          # Fresh candidates selected for this run; do not reuse URLs from the prior workflow version.
+          urls={"culture":"https://news.ikbc.co.kr/article/view/kbc202610300054"}
           def work(pair):
            key,url=pair; out={"key":key,"url":url,"images":[]}
            try:
             s=requests.Session();s.headers["User-Agent"]="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/130 Safari/537.36"
             r=s.get(url,timeout=25);r.raise_for_status()
             if not r.encoding or r.encoding=="ISO-8859-1":r.encoding=r.apparent_encoding
-            soup=BeautifulSoup(r.text,"html.parser");out["final_url"]=r.url
-            out["retrieved_at_utc"]=datetime.datetime.now(datetime.timezone.utc).isoformat()
+            soup=BeautifulSoup(r.text,"html.parser")
+            out["final_url"]=r.url
+            out["retrieved_at_utc"]=__import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat()
+            out["published_date_candidates"]=[x.get("content") for x in soup.select('meta[property="article:published_time"], meta[name="pubdate"], meta[name="date"], time[datetime]') if x.get("content") or x.get("datetime")]
             out["title"]=soup.title.get_text(" ",strip=True) if soup.title else ""
             for el in soup(["script","style","nav","footer","header","noscript"]):el.decompose()
             out["text"]=soup.get_text(" ",strip=True)
@@ -53,25 +50,27 @@ jobs:
              src=urllib.parse.urljoin(r.url,src)
              if src in seen or not src.startswith("http"):continue
              seen.add(src)
-             if len(out["images"])>=8:break
+             if len(out["images"])>=6:break
              try:
               ir=s.get(src,headers={"Referer":r.url},timeout=15);ir.raise_for_status()
               im=Image.open(io.BytesIO(ir.content));w,h=im.size
               if w<200 or h<120:continue
               fn=key+"-"+str(len(out["images"]))+".jpg"
-              im.convert("RGB").save(root/fn,quality=92)
+              im.convert("RGB").save(root/fn,quality=90)
               out["images"].append({"path":fn,"source_url":src,"alt":alt,"width":w,"height":h,"bytes":(root/fn).stat().st_size})
-             except Exception as e:out.setdefault("image_errors",[]).append({"url":src,"error":str(e)[:200]})
+             except Exception as e:
+              out.setdefault("image_errors",[]).append({"url":src,"error":str(e)[:240]})
            except Exception as e:out["error"]=str(e)
            (root/(key+".json")).write_text(json.dumps(out,ensure_ascii=False,indent=2),encoding="utf-8")
            print(key,"text_chars=",len(out.get("text","")),"images=",len(out["images"]),"error=",out.get("error",""))
-          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:list(ex.map(work,urls.items()))
-          (root/"manifest.json").write_text(json.dumps({"collected_at_utc":datetime.datetime.now(datetime.timezone.utc).isoformat(),"candidates":urls},ensure_ascii=False,indent=2),encoding="utf-8")
+          with concurrent.futures.ThreadPoolExecutor(max_workers=4) as ex:list(ex.map(work,urls.items()))
+          manifest={"collection_date_utc":__import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat(),"candidates":list(urls.items())}
+          (root/"manifest.json").write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding="utf-8")
+          # Preserve partial diagnostics in the artifact even when an outlet blocks access.
           PY
           python /tmp/fetch.py
       - uses: actions/upload-artifact@v4
-        if: always()
         with:
-          name: apf-fresh-sources-20261102
+          name: cross-account-image-fresh-sources
           path: sources/
           retention-days: 1
