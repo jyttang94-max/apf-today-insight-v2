@@ -28,8 +28,8 @@ jobs:
             "academic":"https://www.dailian.co.kr/news/view/1709405/27%EB%85%84-%EB%A7%8C%EC%97%90-%ED%95%9C%EA%B5%AD-%EC%98%A8-%EC%95%84%ED%83%9C-%EC%9D%98%EA%B3%B5%ED%95%99%EA%B3%84-2026",
             "culture":"https://web.dongguk.ac.kr/article/wisenews/detail/521037",
             "youth":"https://www.kgdm.co.kr/news/articleView.html?idxno=2016904",
-            "editor":"https://m.pressian.com/pages/articles/2026110208530977978",
-            "book":"https://nwww.newsis.com/view/NISX20261102_0003850338"
+            "editor":"https://www.artkoreatv.com/news/articleView.html?idxno=105355",
+            "book":"https://familyequalityrights.org/campaign/?bmode=view&idx=163682278"
           }
           def work(pair):
            key,url=pair; out={"key":key,"url":url,"images":[]}
