@@ -29,7 +29,7 @@ jobs:
             "culture":"https://web.dongguk.ac.kr/article/wisenews/detail/521037",
             "youth":"https://www.kgdm.co.kr/news/articleView.html?idxno=2016904",
             "editor":"https://www.artkoreatv.com/news/articleView.html?idxno=105355",
-            "book":"https://www.yes24.com/product/goods/22356072"
+            "book":"https://www.yes24.com/Product/Goods/35254168"
           }
           def work(pair):
            key,url=pair; out={"key":key,"url":url,"images":[]}
