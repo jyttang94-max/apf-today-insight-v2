@@ -71,6 +71,6 @@ jobs:
           python /tmp/fetch.py
       - uses: actions/upload-artifact@v4
         with:
-          name: cross-account-image-fresh-sources
+          name: vol037-alternative-20261104-new-article-images
           path: sources/
           retention-days: 7
