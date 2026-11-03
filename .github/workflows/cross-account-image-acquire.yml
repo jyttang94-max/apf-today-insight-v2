@@ -25,7 +25,7 @@ jobs:
           from PIL import Image
           root=pathlib.Path("sources")
           # Fresh candidates selected for this run; do not reuse URLs from the prior workflow version.
-          urls={"culture":"https://news.ikbc.co.kr/article/view/kbc202610300054"}
+          urls={"academic":"https://www.yna.co.kr/view/AKR20261103035200005","culture":"https://www.yna.co.kr/view/AKR20261103050800051","youth":"https://www.opinionnews.co.kr/news/articleView.html?idxno=146524","women":"https://www.chosun.com/culture-life/art-gallery/2026/11/03/3SUK6UM3LFAFPKPOPHRDOMTJF4/"}
           def work(pair):
            key,url=pair; out={"key":key,"url":url,"images":[]}
            try:
@@ -73,4 +73,4 @@ jobs:
         with:
           name: cross-account-image-fresh-sources
           path: sources/
-          retention-days: 1
+          retention-days: 7
