@@ -26,7 +26,7 @@ jobs:
           from PIL import Image
           root=pathlib.Path("sources")
           # Fresh candidates selected for this run; do not reuse URLs from the prior workflow version.
-          urls={"academic":"https://unipress.co.kr/news/articleView.html?idxno=15516"}
+          urls={"academic":"https://www.kyosu.net/news/articleView.html?idxno=206881","culture":"https://www.k-artnow.com/ko/posts.php?co_id=1793689053","youth":"https://futurechosun.com/archives/161120","editor":"https://nwww.newsis.com/view/NISX20261101_0003849660","book":"https://gimssine.com/products/9788974836689"}
           def work(pair):
            key,url=pair; out={"key":key,"url":url,"images":[]}
            try:
