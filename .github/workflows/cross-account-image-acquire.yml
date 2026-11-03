@@ -31,7 +31,7 @@ jobs:
            key,url=pair; out={"key":key,"url":url,"images":[]}
            try:
             s=requests.Session();s.headers["User-Agent"]="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/130 Safari/537.36"
-            r=s.get(url,timeout=25);r.raise_for_status()
+            r=s.get(url,timeout=25,verify=False);r.raise_for_status()
             if not r.encoding or r.encoding=="ISO-8859-1":r.encoding=r.apparent_encoding
             soup=BeautifulSoup(r.text,"html.parser")
             out["final_url"]=r.url
@@ -53,7 +53,7 @@ jobs:
              seen.add(src)
              if len(out["images"])>=6:break
              try:
-              ir=s.get(src,headers={"Referer":r.url},timeout=15);ir.raise_for_status()
+              ir=s.get(src,headers={"Referer":r.url},timeout=15,verify=False);ir.raise_for_status()
               im=Image.open(io.BytesIO(ir.content));w,h=im.size
               if w<200 or h<120:continue
               fn=key+"-"+str(len(out["images"]))+".jpg"
