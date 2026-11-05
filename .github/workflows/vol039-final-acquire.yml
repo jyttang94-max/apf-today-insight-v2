@@ -1,0 +1,81 @@
+name: VOL039 final verify fresh source acquisition
+on:
+  push:
+    branches: ['review/vol039-20261105']
+    paths: ['.github/workflows/vol039-final-acquire.yml']
+permissions:
+  contents: read
+jobs:
+  acquire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests beautifulsoup4 pillow googlenewsdecoder
+      - name: Fetch fresh original pages and image files
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: |
+          mkdir -p sources
+          cat > /tmp/fetch.py <<'PY'
+          import requests,json,pathlib,concurrent.futures,urllib.parse,io,sys
+          from bs4 import BeautifulSoup
+          from PIL import Image
+          root=pathlib.Path("sources")
+          # Fresh candidates selected for this run; do not reuse URLs from the prior workflow version.
+          urls={"book":"https://image.yes24.com/goods/116047146/XL","bookpage":"https://www.yes24.com/product/goods/116047146","youth":"https://www.megaeconomy.co.kr/news/newsview.php?ncode=1065570514364031"}
+          def work(pair):
+           key,url=pair; out={"key":key,"url":url,"images":[]}
+           try:
+            s=requests.Session();s.headers["User-Agent"]="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/130 Safari/537.36"
+            if "news.google.com" in url:
+             from googlenewsdecoder import gnewsdecoder
+             dec=gnewsdecoder(url);url=dec.get("decoded_url") or url
+            r=s.get(url,timeout=25);r.raise_for_status()
+            if key=="book":
+             im=Image.open(io.BytesIO(r.content));im.convert("RGB").save(root/"book-0.jpg",quality=95)
+            if not r.encoding or r.encoding=="ISO-8859-1":r.encoding=r.apparent_encoding
+            soup=BeautifulSoup(r.text,"html.parser")
+            out["final_url"]=r.url
+            out["retrieved_at_utc"]=__import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat()
+            out["published_date_candidates"]=[x.get("content") for x in soup.select('meta[property="article:published_time"], meta[name="pubdate"], meta[name="date"], time[datetime]') if x.get("content") or x.get("datetime")]
+            out["title"]=soup.title.get_text(" ",strip=True) if soup.title else ""
+            for el in soup(["script","style","nav","footer","header","noscript"]):el.decompose()
+            out["text"]=soup.get_text(" ",strip=True)
+            imgs=[]
+            for m in soup.select('meta[property="og:image"], meta[name="twitter:image"], meta[property="twitter:image"]'):
+             if m.get("content"):imgs.append((m["content"],"page metadata"))
+            for im in soup.select("article img, #article-view-content-div img, #news_body_area img, .article img, .news_body img, .view_con img, .content img, main img, img"):
+             src=im.get("data-src") or im.get("data-original") or im.get("src")
+             if src:imgs.append((src,im.get("alt","")))
+            seen=set()
+            for src,alt in imgs:
+             src=urllib.parse.urljoin(r.url,src)
+             if src in seen or not src.startswith("http"):continue
+             seen.add(src)
+             if len(out["images"])>=6:break
+             try:
+              ir=s.get(src,headers={"Referer":r.url},timeout=15);ir.raise_for_status()
+              im=Image.open(io.BytesIO(ir.content));w,h=im.size
+              if w<200 or h<120:continue
+              fn=key+"-"+str(len(out["images"]))+".jpg"
+              im.convert("RGB").save(root/fn,quality=90)
+              out["images"].append({"path":fn,"source_url":src,"alt":alt,"width":w,"height":h,"bytes":(root/fn).stat().st_size})
+             except Exception as e:
+              out.setdefault("image_errors",[]).append({"url":src,"error":str(e)[:240]})
+           except Exception as e:out["error"]=str(e)
+           (root/(key+".json")).write_text(json.dumps(out,ensure_ascii=False,indent=2),encoding="utf-8")
+           print(key,"text_chars=",len(out.get("text","")),"images=",len(out["images"]),"error=",out.get("error",""))
+          with concurrent.futures.ThreadPoolExecutor(max_workers=4) as ex:list(ex.map(work,urls.items()))
+          manifest={"collection_date_utc":__import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat(),"candidates":list(urls.items())}
+          (root/"manifest.json").write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding="utf-8")
+          # Preserve partial diagnostics in the artifact even when an outlet blocks access.
+          PY
+          python /tmp/fetch.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vol039-final-fresh-sources
+          path: sources/
+          retention-days: 1
